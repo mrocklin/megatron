@@ -21,4 +21,4 @@ def test_computations_reify_correctly():
 
 def test_compile():
     from computations.matrices.blas import SYRK
-    assert compile([X*X.T], [X]) == SYRK(1.0, X, 0, ZeroMatrix(n, n))
+    assert compile([X], [X*X.T]) == SYRK(1.0, X, 0, ZeroMatrix(n, n))

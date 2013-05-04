@@ -10,6 +10,7 @@ computes = Relation('computes')
 facts(computes, *patterns)
 
 from logpy import var, run, eq
+from logpy.assoccomm import eq_assoccomm as eqac
 from logpy.variables import variables
 def computations_for(expr):
     c = var('comp')
@@ -17,7 +18,7 @@ def computations_for(expr):
     pred = var('predicate')
     with variables(*vars):
         result = run(0, c, (computes, e, c, pred),
-                           (eq, e, expr),
+                           (eqac, e, expr),
                            (asko, pred, True))
     return result
 
@@ -25,10 +26,16 @@ from megatron.objective import objective
 from computations.core import Identity
 from computations.matrices.fortran.util import constant_arg
 from megatron.util import remove
-def compile(outputs, inputs):
+from sympy import assuming
+def compile(inputs, outputs, *assumptions):
+    """ A very simple greedy scheme.  Can walk into dead ends """
     c = Identity(*outputs)
 
-    while (set(remove(constant_arg, c.inputs)) != set(inputs)):
-        c = c + min(sum(map(computations_for, c.inputs), ()), key=objective)
+    with assuming(*assumptions):
+        while (set(remove(constant_arg, c.inputs)) != set(inputs)):
+            possibilities = sum(map(computations_for, c.inputs), ())
+            if not possibilities:     raise ValueError("Could not compile")
+            best = min(possibilities, key=objective)
+            c = c + best
 
     return c
