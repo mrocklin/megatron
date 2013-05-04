@@ -19,4 +19,3 @@ def objective(C):
         return sum(map(objective, C.computations))
     else:
         return objective_one(C)
-
