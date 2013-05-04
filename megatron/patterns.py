@@ -40,21 +40,21 @@ comp_to_comp = [
 blas = [
     (A*A.T, SYRK(1.0, A, 0.0, ZeroMatrix(A.rows, A.rows)), True),
     (A.T*A, SYRK(1.0, A.T, 0.0, ZeroMatrix(A.cols, A.cols)), True),
-    (alpha*A*B + beta*C, SYMM(*SYMM._inputs), SYMM.condition),
+    (alpha*A*B + beta*C, SYMM(alpha, A, B, beta, C), SYMM.condition),
     (alpha*A*B + C, SYMM(alpha, A, B, 1.0, C), SYMM.condition),
     (A*B + beta*C, SYMM(1.0, A, B, beta, C), SYMM.condition),
     (A*B + C, SYMM(1.0, A, B, 1.0, C), SYMM.condition),
     (alpha*A*B, SYMM(alpha, A, B, 0.0, ZeroMatrix(A.rows, B.cols)), SYMM.condition),
     (A*B, SYMM(1.0, A, B, 0.0, ZeroMatrix(A.rows, B.cols)), SYMM.condition),
 
-    (alpha*A*B + beta*C, GEMM(*GEMM._inputs), True),
+    (alpha*A*B + beta*C, GEMM(alpha, A, B, beta, C), True),
     (alpha*A*B + C, GEMM(alpha, A, B, 1.0, C), True),
     (A*B + beta*C, GEMM(1.0, A, B, beta, C), True),
     (A*B + C, GEMM(1.0, A, B, 1.0, C), True),
     (alpha*A*B, GEMM(alpha, A, B, 0.0, ZeroMatrix(A.rows, B.cols)), True),
     (A*B, GEMM(1.0, A, B, 0.0, ZeroMatrix(A.rows, B.cols)), True),
 
-    (alpha*X + Y, AXPY(*AXPY._inputs), AXPY.condition),
+    (alpha*X + Y, AXPY(alpha, X, ), AXPY.condition),
     (X + Y, AXPY(1.0, X, Y), True)
 ]
 
