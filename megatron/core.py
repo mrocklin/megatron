@@ -15,7 +15,7 @@ def computations_for(expr):
     c = var('comp')
     e = var('expr')
     pred = var('predicate')
-    with variables(*vars.values()):
+    with variables(*vars):
         result = run(0, c, computes(e, c, pred),
                            (eq, e, expr),
                            (asko, pred, True))

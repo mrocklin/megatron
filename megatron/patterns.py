@@ -22,7 +22,7 @@ b = MatrixSymbol('_b', k, 1)
 
 new = locals().copy()
 
-vars = {k: v for (k, v) in new.items() if k not in old and k != 'old'}
+vars = [v for (k, v) in new.items() if k not in old and k != 'old']
 
 from computations.matrices.blas import GEMM, SYMM, AXPY, SYRK
 from computations.matrices.lapack import GESV, POSV, IPIV, LASWP
