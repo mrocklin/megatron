@@ -9,9 +9,8 @@ from logpy import Relation, facts
 computes = Relation('computes')
 facts(computes, *patterns)
 
-from logpy import var, run, eq
+from logpy import var, run, eq, variables
 from logpy.assoccomm import eq_assoccomm as eqac
-from logpy.variables import variables
 def computations_for(expr):
     c = var('comp')
     e = var('expr')
