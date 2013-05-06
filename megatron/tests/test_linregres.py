@@ -1,5 +1,7 @@
 from sympy import MatrixSymbol, Q, ZeroMatrix, assuming
-n, m = 3, 2
+from sympy import Symbol
+n = Symbol('n')
+m = Symbol('m')
 X = MatrixSymbol('X', n, m)
 y = MatrixSymbol('y', n, 1)
 beta = (X.T*X).I * X.T*y
@@ -23,6 +25,7 @@ def test_numeric():
                     modname='linregress', filename='linregress.f90')
 
     assert callable(f)
+    print f.__doc__
     import numpy as np
     nX = np.asarray([[2, 1], [1, 2]], dtype='float64').reshape((2, 2))
     ny = np.ones(2)
