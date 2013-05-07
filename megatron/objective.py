@@ -15,6 +15,13 @@ def objective_one(c):
 
 def objective(C):
     """ Sum of indices - not very robust """
+    from sympy.matrices.expressions.fourier import DFT
+    from sympy.matrices.expressions import Transpose
+    if any(isinstance(i, DFT) for i in C.inputs):
+        return 1e9
+    if any(isinstance(i, Transpose) and isinstance(i.arg, DFT) for i in
+            C.inputs):
+        return 1e9
     if isinstance(C, CompositeComputation):
         return sum(map(objective, C.computations))
     else:
