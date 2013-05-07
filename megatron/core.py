@@ -12,6 +12,7 @@ facts(computes, *patterns)
 from logpy import var, run, eq, variables
 from logpy.assoccomm import eq_assoccomm as eqac
 def computations_for(expr):
+    """ Computations that can break down expr """
     c = var('comp')
     e = var('expr')
     pred = var('predicate')
@@ -22,6 +23,7 @@ def computations_for(expr):
     return result
 
 def children(comp):
+    """ Compute next options in tree of possible algorithms """
     atomics = sum(map(computations_for, comp.inputs), ())
     return map(comp.__add__, atomics)
 
@@ -55,10 +57,11 @@ def compile(inputs, outputs, *assumptions):
     """ A very simple greedy scheme.  Can walk into dead ends """
     c = Identity(*outputs)
 
+    # Is this computation a leaf in our tree?  Do its inputs match ours?
     isleaf = lambda comp: set(remove(constant_arg, comp.inputs)) == set(inputs)
 
     with assuming(*assumptions):
-        stream = greedy(children, objective, isleaf, c)
-        result = next(stream)
+        stream = greedy(children, objective, isleaf, c) # all valid computations
+        result = next(stream)                           # first valid computtion
 
     return result
