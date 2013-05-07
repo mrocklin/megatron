@@ -26,9 +26,10 @@ vars = [v for (k, v) in new.items() if k not in old and k != 'old']
 
 from computations.matrices.blas import GEMM, SYMM, AXPY, SYRK
 from computations.matrices.lapack import GESV, POSV, IPIV, LASWP
-from computations.matrices.fftw import FFTW
+from computations.matrices.fftw import FFTW, IFFTW
+from computations.matrices.elemental import ElemProd
 from computations.matrices.permutation import PermutationMatrix
-from sympy.matrices.expressions import ZeroMatrix
+from sympy.matrices.expressions import ZeroMatrix, HadamardProduct
 from sympy.matrices.expressions.fourier import DFT
 
 comp_to_comp = [
@@ -66,6 +67,8 @@ lapack = [
 
 other = [
     (DFT(n)*x, FFTW(x), True),
+    (DFT(n).T*x, IFFTW(x), True),
+    (HadamardProduct(A, X), ElemProd(A, X), True),
 ]
 
 patterns = blas + lapack + other
