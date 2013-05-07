@@ -21,20 +21,44 @@ def computations_for(expr):
                            (asko, pred, True))
     return result
 
+def children(comp):
+    atomics = sum(map(computations_for, comp.inputs), ())
+    return map(comp.__add__, atomics)
+
 from megatron.objective import objective
 from computations.core import Identity
 from computations.matrices.fortran.util import constant_arg
 from megatron.util import remove
 from sympy import assuming
+
+
+import itertools as it
+from functools import partial
+
+def greedy(children, objective, isleaf, node):
+    """ Greedy guided search in tree
+
+    greedy      :: a -> a...    --  This function, produces lazy iterator
+    children    :: a -> [a]     --  Children of node
+    objective   :: a -> score   --  Quality of node
+    isleaf      :: a -> T/F     --  Successful leaf of tree
+    """
+    if isleaf(node):
+        return iter([node])
+    f = partial(greedy, children, objective, isleaf)
+    options = sorted(children(node), key=objective)
+    streams = map(f, options)
+    return it.chain(*streams)
+
+
 def compile(inputs, outputs, *assumptions):
     """ A very simple greedy scheme.  Can walk into dead ends """
     c = Identity(*outputs)
 
-    with assuming(*assumptions):
-        while (set(remove(constant_arg, c.inputs)) != set(inputs)):
-            possibilities = sum(map(computations_for, c.inputs), ())
-            if not possibilities:     raise ValueError("Could not compile")
-            best = min(possibilities, key=objective)
-            c = c + best
+    isleaf = lambda comp: set(remove(constant_arg, comp.inputs)) == set(inputs)
 
-    return c
+    with assuming(*assumptions):
+        stream = greedy(children, objective, isleaf, c)
+        result = next(stream)
+
+    return result
