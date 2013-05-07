@@ -54,7 +54,7 @@ blas = [
     (alpha*A*B, GEMM(alpha, A, B, 0.0, ZeroMatrix(A.rows, B.cols)), True),
     (A*B, GEMM(1.0, A, B, 0.0, ZeroMatrix(A.rows, B.cols)), True),
 
-    (alpha*X + Y, AXPY(alpha, X, ), AXPY.condition),
+    (alpha*X + Y, AXPY(alpha, X, Y), AXPY.condition),
     (X + Y, AXPY(1.0, X, Y), True)
 ]
 
