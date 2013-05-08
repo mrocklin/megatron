@@ -37,6 +37,8 @@ from sympy import assuming
 import itertools as it
 from functools import partial
 
+debug = False
+
 def greedy(children, objective, isleaf, node):
     """ Greedy guided search in tree
 
@@ -45,10 +47,18 @@ def greedy(children, objective, isleaf, node):
     objective   :: a -> score   --  Quality of node
     isleaf      :: a -> T/F     --  Successful leaf of tree
     """
+    if debug:
+        print "Node:   ", node
+        print "Inputs: ", node.inputs
     if isleaf(node):
+        if debug:
+            print "Is Leaf"
         return iter([node])
     f = partial(greedy, children, objective, isleaf)
     options = sorted(children(node), key=objective)
+    if debug:
+        from computations.dot import show
+        map(show, options)
     streams = map(f, options)
     return it.chain(*streams)
 
