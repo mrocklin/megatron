@@ -1,4 +1,4 @@
-from megatron.util import (unique, merge, groupby, remove)
+from megatron.util import (unique, merge, groupby, remove, chain)
 
 
 def test_unique():
@@ -16,3 +16,6 @@ def test_groupby():
 
 def test_remove():
     assert remove(str.islower, 'AaBb') == ['A', 'B']
+
+def test_chain():
+    assert list(chain([[1, 2], [3, 4]])) == [1, 2, 3, 4]

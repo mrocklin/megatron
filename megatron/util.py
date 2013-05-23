@@ -30,3 +30,8 @@ def groupby(f, coll):
             d[key] = []
         d[key].append(item)
     return d
+
+def chain(iters):
+    for it in iters:
+        for item in it:
+            yield item
