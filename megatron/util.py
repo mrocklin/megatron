@@ -32,6 +32,12 @@ def groupby(f, coll):
     return d
 
 def chain(iters):
+    """ Chain a sequence of sequences
+
+    >>> from megatron.util import chain
+    >>> list(chain([[1, 2], [3, 4]]))
+    [1, 2, 3, 4]
+    """
     for it in iters:
         for item in it:
             yield item
