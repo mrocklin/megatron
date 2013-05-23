@@ -1,25 +1,15 @@
-from sympy import MatrixSymbol, Q, ZeroMatrix, assuming
-from sympy import Symbol
-n = Symbol('n')
-m = Symbol('m')
-X = MatrixSymbol('X', n, m)
-y = MatrixSymbol('y', n, 1)
-beta = (X.T*X).I * X.T*y
-
-from computations.matrices.blas import SYRK, GEMM
-from computations.matrices.lapack import POSV
-c = (POSV(X.T*X, X.T*y)
-   + SYRK(1.0, X.T, 0.0, ZeroMatrix(m, m))
-   + GEMM(1.0, X.T, y, 0.0, ZeroMatrix(n, 1)))
-
+from computations.matrices.examples.linregress import (c, assumptions, X, y,
+        beta)
+from sympy import assuming
 from megatron.core import compile
+
 def test_compile():
-    result = compile([X, y], [beta], Q.fullrank(X))
+    result = compile([X, y], [beta], *assumptions)
     assert set(map(type, result.computations)) == set(map(type, c.computations))
 
 from computations.matrices.fortran.core import build
 def test_numeric():
-    with assuming(Q.fullrank(X), Q.real_elements(X), Q.real_elements(y)):
+    with assuming(*assumptions):
         result = compile([X, y], [beta])
         f = build(result, [X, y], [beta],
                     modname='linregress', filename='linregress.f90')
