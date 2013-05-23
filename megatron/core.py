@@ -30,7 +30,7 @@ def children(comp):
 from megatron.objective import objective
 from computations.core import Identity
 from computations.matrices.fortran.util import constant_arg
-from megatron.util import remove
+from megatron.util import remove, chain
 from sympy import assuming
 
 
@@ -59,12 +59,12 @@ def greedy(children, objective, isleaf, node):
     if debug:
         from computations.dot import show
         map(show, options)
-    streams = map(f, options)
-    return it.chain(*streams)
+    streams = it.imap(f, options)
+    return chain(streams)
 
 
 def compile(inputs, outputs, *assumptions):
-    """ A very simple greedy scheme.  Can walk into dead ends """
+    """ A very simple greedy scheme."""
     c = Identity(*outputs)
 
     # Is this computation a leaf in our tree?  Do its inputs match ours?
