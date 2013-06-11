@@ -62,8 +62,8 @@ def test_integrative():
         orders, jobson = schedule(c.dict_oi(), (0,1), compcost, commcost)
         neworders, jobson = insert_sendrecvs(orders, jobson, c.dict_io(),
                                              send=isend, recv=irecv)
-        c1 = CompositeComputation(*[e.job for e in neworders[1]])
-        c2 = CompositeComputation(*[e.job for e in neworders[2]])
+        c1 = CompositeComputation(*[e.job for e in neworders[0]])
+        c2 = CompositeComputation(*[e.job for e in neworders[1]])
         c1io = disk_io(c1, filenames)
         c2io = disk_io(c2, filenames)
         ic1io = inplace_compile(c1io, Copy=COPY)
