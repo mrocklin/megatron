@@ -2,7 +2,7 @@ from sympy import Q, assuming
 from computations.matrices.examples.kalman import (inputs, outputs, n, k,
         assumptions)
 from computations.matrices.examples.kalman_comp import make_kalman_comp
-from megatron.scheduling.times import make_compcost
+from megatron.scheduling.times import make_compcost, commcost
 
 import numpy as np
 
@@ -41,3 +41,32 @@ def compcost_kalman(nn=1000, nk=500):
 def test_compcost():
     compcost = compcost_kalman()
     assert all(isinstance(compcost(comp, 1), float) for comp in c.computations)
+
+def test_integrative():
+    from heft import schedule, insert_sendrecvs
+    from computations.matrices.mpi import send, recv
+    from computations.matrices.blas import COPY
+    from computations.inplace import inplace_compile
+    from computations.matrices.io import disk_io
+    from computations.matrices.fortran.mpi import generate_mpi
+    from computations.core import CompositeComputation
+    ninputs = make_inputs(nn, nk)
+    types = tuple(map(Q.real_elements, inputs))
+    mu, Sigma, H, R, data = inputs
+    newmu, newSigma = outputs
+    filenames = {mu: 'mu.dat', Sigma: 'Sigma.dat', H: 'H.dat', R: 'R.dat',
+                 data: 'data.dat', newmu: 'mu2.dat', newSigma: 'Sigma2.dat'}
+
+    with assuming(*(assumptions+types)):
+        compcost = make_compcost(c, inputs, ninputs)
+        orders, jobson = schedule(c.dict_oi(), (1,2), compcost, commcost)
+        neworders, jobson = insert_sendrecvs(orders, jobson, c.dict_io(),
+                                             send=send, recv=recv)
+        c1 = CompositeComputation(*[e.job for e in neworders[1]])
+        c2 = CompositeComputation(*[e.job for e in neworders[2]])
+        c1io = disk_io(c1, filenames)
+        c2io = disk_io(c2, filenames)
+        ic1io = inplace_compile(c1io, Copy=COPY)
+        ic2io = inplace_compile(c2io, Copy=COPY)
+        code = generate_mpi(ic1io, [],  [], 'c1', ic2io, [], [], 'c2')
+        assert isinstance(code, str)
