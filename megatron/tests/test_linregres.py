@@ -12,15 +12,14 @@ def test_numeric():
     with assuming(*assumptions):
         result = compile([X, y], [beta])
         f = build(result, [X, y], [beta],
-                    modname='linregress', filename='linregress.f90')
+                    modname='linregress2', filename='linregress2.f90')
 
     assert callable(f)
-    print f.__doc__
     import numpy as np
     nX = np.asarray([[2, 1], [1, 2]], dtype='float64').reshape((2, 2))
     ny = np.ones(2)
 
     mX = np.matrix(nX)
     my = np.matrix(ny).T
-    expected = np.linalg.solve(mX.T*mX, mX.T*my)
+    expected = np.linalg.solve(mX.T*mX, mX.T*my).A.squeeze()
     assert np.allclose(expected, f(nX, ny))
