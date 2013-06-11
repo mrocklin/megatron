@@ -70,3 +70,7 @@ def test_integrative():
         ic2io = inplace_compile(c2io, Copy=COPY)
         code = generate_mpi(ic1io, [],  [], 'c1', ic2io, [], [], 'c2')
         assert isinstance(code, str)
+
+    from computations.dot import writepdf
+    writepdf(c1io, 'tmp/kalman_mpi_1')
+    writepdf(c2io, 'tmp/kalman_mpi_2')
