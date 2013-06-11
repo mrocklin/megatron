@@ -44,7 +44,7 @@ def test_compcost():
 
 def test_integrative():
     from heft import schedule, insert_sendrecvs
-    from computations.matrices.mpi import send, recv
+    from computations.matrices.mpi import isend, irecv
     from computations.matrices.blas import COPY
     from computations.inplace import inplace_compile
     from computations.matrices.io import disk_io
@@ -59,9 +59,9 @@ def test_integrative():
 
     with assuming(*(assumptions+types)):
         compcost = make_compcost(c, inputs, ninputs)
-        orders, jobson = schedule(c.dict_oi(), (1,2), compcost, commcost)
+        orders, jobson = schedule(c.dict_oi(), (0,1), compcost, commcost)
         neworders, jobson = insert_sendrecvs(orders, jobson, c.dict_io(),
-                                             send=send, recv=recv)
+                                             send=isend, recv=irecv)
         c1 = CompositeComputation(*[e.job for e in neworders[1]])
         c2 = CompositeComputation(*[e.job for e in neworders[2]])
         c1io = disk_io(c1, filenames)
@@ -69,6 +69,8 @@ def test_integrative():
         ic1io = inplace_compile(c1io, Copy=COPY)
         ic2io = inplace_compile(c2io, Copy=COPY)
         code = generate_mpi(ic1io, [],  [], 'c1', ic2io, [], [], 'c2')
+        with open('tmp/kalman_mpi.f90', 'w') as f:
+            f.write(code)
         assert isinstance(code, str)
 
     from computations.dot import writepdf
