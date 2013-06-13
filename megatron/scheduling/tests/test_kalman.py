@@ -15,18 +15,17 @@ assumptions = tuple(map(dimsubs, assumptions))
 
 c = make_kalman_comp(*inputs)
 
-def make_inputs(nn, nk):
-    dims = {n: nn, k: nk}
+def make_inputs(n, k):
+    ninputs = [
+        np.ones(n, dtype=np.float64),
+        np.eye(n, dtype=np.float64),
+        np.hstack([np.eye(k, dtype=np.float64),
+                              np.zeros((k, n-k), dtype=np.float64)]),
+        np.eye(k, dtype=np.float64),
+        np.ones(k, dtype=np.float64)
+    ]
 
-    # random numerical inputs
-    ninputs = [np.random.rand(*i.subs(dims).shape) for i in inputs]
-
-    # Sigma and R must be symmetric positive definite.  Just set as identity
-    for i in [1, 3]:
-        ninputs[i] = np.eye(ninputs[i].shape[0])
-
-    # force fortran ordering
-    ninputs = map(np.asfortranarray, ninputs)
+    ninputs = map(np.asfortranarray, ninputs)  # force fortran ordering
     return ninputs
 
 def compcost_kalman(nn=1000, nk=500):
@@ -76,3 +75,9 @@ def test_integrative():
     from computations.dot import writepdf
     writepdf(c1io, 'tmp/kalman_mpi_1')
     writepdf(c2io, 'tmp/kalman_mpi_2')
+
+def write_kalman_data(n, k, directory='.'):
+    ninputs = make_inputs(n, k)
+    filenames = ['%s/%s.dat' % (directory, name) for name in map(str, inputs)]
+    for ninput, filename in zip(ninputs, filenames):
+        np.savetxt(filename, ninput, newline=' ')
