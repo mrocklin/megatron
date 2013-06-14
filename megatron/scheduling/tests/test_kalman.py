@@ -2,7 +2,7 @@ from sympy import Q, assuming
 from computations.matrices.examples.kalman import (inputs, outputs, n, k,
         assumptions)
 from computations.matrices.examples.kalman_comp import make_kalman_comp
-from megatron.scheduling.times import make_compcost, commcost
+from megatron.scheduling.times import make_compcost, make_commcost
 
 import numpy as np
 
@@ -41,6 +41,17 @@ def test_compcost():
     compcost = compcost_kalman()
     assert all(isinstance(compcost(comp, 1), float) for comp in c.computations)
 
+def make_order_cmp(event_list):
+    jobs = [e.job for e in event_list]
+    def order_cmp(a, b):
+        if a in jobs and b in jobs:
+            return jobs.index(b) - jobs.index(a)
+        else:
+            return 0
+    return order_cmp
+
+
+
 def test_integrative():
     from heft import schedule, insert_sendrecvs
     from computations.matrices.mpi import isend, irecv
@@ -58,7 +69,8 @@ def test_integrative():
 
     with assuming(*(assumptions+types)):
         compcost = make_compcost(c, inputs, ninputs)
-        orders, jobson = schedule(c.dict_oi(), (0,1), compcost, commcost)
+        commcost = make_commcost(1e-6, 1e-9)
+        orders, jobson = schedule(c.dict_io(), (0,1), compcost, commcost)
         neworders, jobson = insert_sendrecvs(orders, jobson, c.dict_io(),
                                              send=isend, recv=irecv)
         c1 = CompositeComputation(*[e.job for e in neworders[0]])
@@ -67,7 +79,8 @@ def test_integrative():
         c2io = disk_io(c2, filenames)
         ic1io = inplace_compile(c1io, Copy=COPY)
         ic2io = inplace_compile(c2io, Copy=COPY)
-        code = generate_mpi(ic1io, [],  [], 'c1', ic2io, [], [], 'c2')
+        code = generate_mpi(ic1io, 'c1', [make_order_cmp(orders[0])],
+                            ic2io, 'c2', [make_order_cmp(orders[1])])
         with open('tmp/kalman_mpi.f90', 'w') as f:
             f.write(code)
         assert isinstance(code, str)
@@ -75,6 +88,8 @@ def test_integrative():
     from computations.dot import writepdf
     writepdf(c1io, 'tmp/kalman_mpi_1')
     writepdf(c2io, 'tmp/kalman_mpi_2')
+    with open('tmp/orders.txt', 'w') as f:
+        f.write('\n'.join(map(str, orders.items())))
 
 def write_kalman_data(n, k, directory='.'):
     ninputs = make_inputs(n, k)
