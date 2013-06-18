@@ -1,1 +1,4 @@
 *.pyc
+*.dot
+*.pdf
+*.so
