@@ -1,6 +1,6 @@
 from computations.core import Computation, CompositeComputation
 from computations.matrices import AXPY, COPY, isend, irecv
-from megatron.scheduling.tompkins import computation_from_dict
+from megatron.scheduling.tompkinslink import computation_from_dict
 
 from sympy import MatrixSymbol, Symbol
 n = Symbol('n')
