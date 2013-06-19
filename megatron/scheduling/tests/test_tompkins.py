@@ -1,5 +1,6 @@
 from computations.core import Computation, CompositeComputation
 from computations.matrices import AXPY, COPY, isend, irecv
+from megatron.scheduling.tompkins import computation_from_dict
 
 from sympy import MatrixSymbol, Symbol
 n = Symbol('n')
@@ -10,6 +11,9 @@ b = AXPY(1, A+B, C)
 c = AXPY(1, X, Y)
 d = AXPY(1, X+Y, Z)
 e = AXPY(1, A+B+C, X+Y+Z)
+
+# a -> b -> c
+# d -> e --/
 
 comp = a+b+c+d+e
 agents = (0, 1)
@@ -34,3 +38,7 @@ def test_sched():
 
     assert times[a] == times[c] == 0
     assert 1.0 in (times[b], times[d])
+
+def test_computation_from_dict():
+    assert computation_from_dict({a: (b,), b: (c,)}) == \
+            CompositeComputation(a, b, c)
