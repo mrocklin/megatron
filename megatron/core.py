@@ -16,10 +16,9 @@ def computations_for(expr):
     c = var('comp')
     e = var('expr')
     pred = var('predicate')
-    with variables(*vars):
-        result = run(0, c, (computes, e, c, pred),
-                           (eqac, e, expr),
-                           (asko, pred, True))
+    result = run(0, c, (computes, e, c, pred),
+                       (eqac, e, expr),
+                       (asko, pred, True))
     return result
 
 def children(comp):
@@ -71,7 +70,8 @@ def compile(inputs, outputs, *assumptions):
     isleaf = lambda comp: set(remove(constant_arg, comp.inputs)) == set(inputs)
 
     with assuming(*assumptions):
-        stream = greedy(children, objective, isleaf, c) # all valid computations
-        result = next(stream)                           # first valid computtion
+        with variables(*vars):
+            stream = greedy(children, objective, isleaf, c) # all valid computations
+            result = next(stream)                           # first valid computtion
 
     return result
