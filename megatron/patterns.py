@@ -1,6 +1,6 @@
 
 from sympy.matrices.expressions import MatrixSymbol, Transpose
-from sympy import Symbol, ask, Q, Dummy
+from sympy import Symbol, ask, Q, Dummy, ImmutableMatrix, BlockMatrix
 
 old = locals().copy()
 
@@ -8,6 +8,7 @@ old = locals().copy()
 alpha = Symbol('_alpha')
 beta  = Symbol('_beta')
 n,m,k = map(Symbol, ['_n', '_m', '_k'])
+i1, i2, i3, i4, i5, i6 = map(Symbol, ['_i%d'%i for i in range(1, 7)])
 A = MatrixSymbol('_A', n, m)
 B = MatrixSymbol('_B', m, k)
 C = MatrixSymbol('_C', n, k)
@@ -19,6 +20,8 @@ S = MatrixSymbol('_S', n, n)
 x = MatrixSymbol('_x', n, 1)
 a = MatrixSymbol('_a', m, 1)
 b = MatrixSymbol('_b', k, 1)
+SW, SX, SY, SZ = [MatrixSymbol('_S'+s, n, n) for s in 'WXYZ']
+blocks = ImmutableMatrix([[SW, SX], [SY, SZ]])
 
 new = locals().copy()
 
@@ -27,6 +30,7 @@ vars = [v for (k, v) in new.items() if k not in old and k != 'old']
 from computations.matrices.blas import GEMM, SYMM, AXPY, SYRK
 from computations.matrices.lapack import GESV, POSV, IPIV, LASWP
 from computations.matrices.fftw import FFTW, IFFTW
+from computations.matrices.blocks import Slice, Join
 from computations.matrices.elemental import ElemProd
 from computations.matrices.permutation import PermutationMatrix
 from sympy.matrices.expressions import ZeroMatrix, HadamardProduct
@@ -65,10 +69,13 @@ lapack = [
 
 ]
 
+
 other = [
     (DFT(n)*x, FFTW(x), True),
     (DFT(n).T*x, IFFTW(x), True),
     (HadamardProduct(A, X), ElemProd(A, X), True),
+    (BlockMatrix(blocks), Join(BlockMatrix(blocks)), True),
+    (X[i1:i2:i3, i4:i5:i6], Slice(X[i1:i2:i3, i4:i5:i6]), True),
 ]
 
 patterns = blas + lapack + other
