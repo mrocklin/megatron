@@ -36,7 +36,8 @@ def test_sched():
     assert jobson[a] != jobson[c]
     assert jobson[b] != jobson[d]
 
-    assert times[a] == times[c] == 0
+    assert times[c] == 0
+    assert times[a] <= 1.5
     assert 1.0 in (times[b], times[d])
 
 def test_computation_from_dict():
