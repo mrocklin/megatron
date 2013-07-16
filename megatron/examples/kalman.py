@@ -44,17 +44,18 @@ commcost = make_commcost(7.058e-5, 6.87e-7)
 commcost_tomp = make_commcost_tompkins(7.058e-5, 6.87e-7)
 
 
+from computations.matrices.mpi import isend, irecv
+from computations.matrices.blas import COPY
+from computations.inplace import inplace_compile
+from computations.matrices.io import disk_io
+from computations.matrices.fortran.mpi import generate_mpi
+from computations.core import CompositeComputation
+from megatron.scheduling.util import make_order_cmp
+from megatron.scheduling.tompkinslink import computation_from_dict
+
 def make_heft_kalman():
     from heft import schedule as schedule_heft
     from heft import insert_sendrecvs, makespan
-    from computations.matrices.mpi import isend, irecv
-    from computations.matrices.blas import COPY
-    from computations.inplace import inplace_compile
-    from computations.matrices.io import disk_io
-    from computations.matrices.fortran.mpi import generate_mpi
-    from computations.core import CompositeComputation
-    from megatron.scheduling.util import make_order_cmp
-    from megatron.scheduling.tompkinslink import computation_from_dict
 
     with assuming(*(assumptions+types)):
         orders, jobson = schedule_heft(c.dict_io(), agents, compcost, commcost)
@@ -85,14 +86,6 @@ def make_heft_kalman():
 def make_tompkins_kalman():
     from tompkins import schedule as schedule_tompkins
     from tompkins import orderings
-    from computations.matrices.mpi import isend, irecv
-    from computations.matrices.blas import COPY
-    from computations.inplace import inplace_compile
-    from computations.matrices.io import disk_io
-    from computations.matrices.fortran.mpi import generate_mpi
-    from computations.core import CompositeComputation
-    from megatron.scheduling.util import make_order_cmp
-    from megatron.scheduling.tompkinslink import computation_from_dict
     with assuming(*(assumptions+types)):
         commcost_tomp = make_commcost_tompkins(7.058e-5, 6.87e-7)
         dags, sched, m = schedule_tompkins(c.dict_io(), agents, compcost,
