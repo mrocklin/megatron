@@ -44,15 +44,6 @@ commcost = make_commcost(7.058e-5, 6.87e-7)
 commcost_tomp = make_commcost_tompkins(7.058e-5, 6.87e-7)
 
 
-def compcost_kalman(nn=nn, nk=nk):
-    ninputs = make_inputs(nn, nk)
-
-    types = tuple(map(Q.real_elements, inputs))
-    with assuming(*(assumptions+types)):
-        compcost = make_compcost(c, inputs, ninputs)
-
-    return compcost
-
 def make_heft_kalman():
     from heft import schedule as schedule_heft
     from heft import insert_sendrecvs, makespan

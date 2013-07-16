@@ -1,15 +1,11 @@
 from sympy import Q, assuming
 from megatron.examples.kalman import (inputs, outputs, n, k,
-        assumptions, c, nn, nk, make_inputs, compcost_kalman, make_heft_kalman,
+        assumptions, c, nn, nk, make_inputs, make_heft_kalman,
         make_tompkins_kalman)
 from megatron.scheduling.times import (make_compcost, make_commcost,
         make_commcost_tompkins)
 
 import numpy as np
-
-def test_compcost():
-    compcost = compcost_kalman()
-    assert all(isinstance(compcost(comp, 1), float) for comp in c.computations)
 
 
 def test_integrative():
