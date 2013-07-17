@@ -2,6 +2,8 @@
 from computations.matrices.blas import GEMM, SYMM, AXPY, SYRK
 from computations.matrices.lapack import GESV, POSV, IPIV, LASWP
 from computations.matrices.fftw import FFTW
+from sympy.matrices.expressions.fourier import DFT
+from sympy.matrices.expressions import Transpose, Inverse, MatMul
 
 order = [FFTW, POSV, GESV, LASWP, SYRK, SYMM, GEMM, AXPY]
 
@@ -15,14 +17,18 @@ def objective_one(c):
 
 def objective(C):
     """ Sum of indices - not very robust """
-    from sympy.matrices.expressions.fourier import DFT
-    from sympy.matrices.expressions import Transpose
-    if any(isinstance(i, DFT) for i in C.inputs):
-        return 1e9
-    if any(isinstance(i, Transpose) and isinstance(i.arg, DFT) for i in
-            C.inputs):
+    if not valid(C):
         return 1e9
     if isinstance(C, CompositeComputation):
         return sum(map(objective, C.computations))
     else:
         return objective_one(C)
+
+def valid(C):
+    if (any(isinstance(i, DFT) for i in C.inputs)
+     or any(isinstance(i, Transpose) and isinstance(i.arg, DFT) for i in C.inputs)
+     or any(isinstance(i, Inverse) for i in C.inputs)
+     or any(isinstance(i, MatMul) and isinstance(i.args[-1], Inverse) for i in C.inputs)
+     ):
+        return False
+    return True
