@@ -65,7 +65,7 @@ blas = [
 
 lapack = [
     (Z.I*X, POSV(Z, X), Q.symmetric(Z) & Q.positive_definite(Z)),
-#    (Z.I*X, GESV(Z, X) + LASWP(PermutationMatrix(IPIV(Z.I*X))*Z.I*X, IPIV(Z.I*X)), True),
+    (Z.I*X, GESV(Z, X) + LASWP(PermutationMatrix(IPIV(Z.I*X))*Z.I*X, IPIV(Z.I*X)), True),
 
 ]
 
