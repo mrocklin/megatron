@@ -18,4 +18,4 @@ def test_computations_reify_correctly():
     assert all(X in c.inputs for c in computations_for(expr))
 
 def test_compile():
-    assert compile([X], [X*X.T]) == SYRK(1.0, X, 0, ZeroMatrix(n, n))
+    assert str(compile([X], [X*X.T])) == str(SYRK(1.0, X, 0, ZeroMatrix(n, n)))
