@@ -39,12 +39,16 @@ computations = lambda comp: comp.toposort()
 
 def profile_build(pcomp, inputs, **kwargs):
     durations = [c.duration for c in computations(pcomp)]
-    f = build(pcomp, inputs, durations, **kwargs)
+    key = str(abs(hash(pcomp)))
+    f = build(pcomp, inputs, durations, modname='profile_'+key,
+                                        filename='profile_%s.f90'%key,
+                                        **kwargs)
     return f
 
 def make_compcost(comp, inputs, ninputs, **kwargs):
     f = profile_build(profile(comp), inputs, **kwargs)
     times = f(*ninputs)
+    assert all(isinstance(time, float) for time in times)
     d = dict(zip(computations(comp), times))
     with open('tmp/compcost.dat', 'w') as f:
         for item in d.items():
