@@ -1,6 +1,8 @@
 from heft import schedule, insert_sendrecvs
 from computations.matrices.fortran.core import nbytes, build
 from functools import partial
+from computations.inplace import inplace_compile, ExprToken
+from computations.matrices.blas import COPY
 
 inv_bandwidth = 6.87213759e-07
 latency = 7.05801143e-05
@@ -17,6 +19,8 @@ def make_commcost_tompkins(*args):
     commtime = make_commtime(*args)
     def commcost(job, agent1, agent2):
         vars = job.outputs
+        vars = [var.expr if isinstance(var, ExprToken) else var
+                for var in vars]
         return sum(map(partial(commtime, a=agent1, b=agent2), vars))
     return commcost
 
@@ -24,15 +28,13 @@ def make_commcost(*args):
     commtime = make_commtime(*args)
     def commcost(job1, job2, agent1, agent2):
         vars = set(job1.outputs) & set(job2.inputs)
+        vars = [var.expr if isinstance(var, ExprToken) else var
+                for var in vars]
         return sum(map(partial(commtime, a=agent1, b=agent2), vars))
     return commcost
 commcost = make_commcost(inv_bandwidth, latency)
 
-def profile_comp(comp):
-    from computations.profile import ProfileMPI
-    from computations.core import CompositeComputation
-    return CompositeComputation(*map(ProfileMPI, comp.toposort()))
-
+from computations.profile import profile
 computations = lambda comp: comp.toposort()
 
 def profile_build(pcomp, inputs, **kwargs):
@@ -41,7 +43,7 @@ def profile_build(pcomp, inputs, **kwargs):
     return f
 
 def make_compcost(comp, inputs, ninputs, **kwargs):
-    f = profile_build(profile_comp(comp), inputs, **kwargs)
+    f = profile_build(profile(comp), inputs, **kwargs)
     times = f(*ninputs)
     d = dict(zip(computations(comp), times))
     with open('tmp/compcost.dat', 'w') as f:
