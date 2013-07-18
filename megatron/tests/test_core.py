@@ -19,3 +19,12 @@ def test_computations_reify_correctly():
 
 def test_compile():
     assert str(compile([X], [X*X.T])) == str(SYRK(1.0, X, 0, ZeroMatrix(n, n)))
+
+def test_gesv_laswp():
+    from computations.matrices.lapack import (IPIV, PermutationMatrix, LASWP,
+            GESV)
+    X = MatrixSymbol('X', 3, 3)
+    Z = MatrixSymbol('Z', 3, 3)
+    comp = GESV(Z, X) +LASWP(PermutationMatrix(IPIV(Z.I*X))*Z.I*X, IPIV(Z.I*X))
+    assert Z.I*X in comp.outputs
+    assert 'IPIV' not in str(comp.outputs)

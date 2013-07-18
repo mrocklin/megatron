@@ -1,5 +1,5 @@
 
-from sympy.matrices.expressions import MatrixSymbol, Transpose
+from sympy.matrices.expressions import MatrixSymbol, Transpose, MatMul
 from sympy import Symbol, ask, Q, Dummy, ImmutableMatrix, BlockMatrix
 
 old = locals().copy()
@@ -28,7 +28,7 @@ new = locals().copy()
 vars = [v for (k, v) in new.items() if k not in old and k != 'old']
 
 from computations.matrices.blas import GEMM, SYMM, AXPY, SYRK
-from computations.matrices.lapack import GESV, POSV, IPIV, LASWP
+from computations.matrices.lapack import GESV, POSV, IPIV, LASWP, GESVLASWP
 from computations.matrices.fftw import FFTW, IFFTW
 from computations.matrices.blocks import Slice, Join
 from computations.matrices.elemental import ElemProd
@@ -65,7 +65,8 @@ blas = [
 
 lapack = [
     (Z.I*X, POSV(Z, X), Q.symmetric(Z) & Q.positive_definite(Z)),
-    (Z.I*X, GESV(Z, X) + LASWP(PermutationMatrix(IPIV(Z.I*X))*Z.I*X, IPIV(Z.I*X)), True),
+    (Z.I*X, GESVLASWP(Z, X), True),
+    # (Z.I*X, GESV(Z, X) + LASWP(MatMul(PermutationMatrix(IPIV(Z.I*X)), Z.I*X), IPIV(Z.I*X)), True),
 
 ]
 
@@ -78,4 +79,4 @@ other = [
     (X[i1:i2:i3, i4:i5:i6], Slice(X[i1:i2:i3, i4:i5:i6]), True),
 ]
 
-patterns = blas + lapack + other
+patterns = lapack + blas + other
