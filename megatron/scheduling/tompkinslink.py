@@ -8,4 +8,3 @@ def computation_from_dict(d):
     """
     return CompositeComputation(*
             set(d.keys()) | set(sum(d.values(), ())))
-

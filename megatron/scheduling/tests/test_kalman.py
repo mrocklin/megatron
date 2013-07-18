@@ -20,9 +20,3 @@ def test_integrative():
     print "Tompkins Makespan: ", makespan_tompkins
     assert makespan_tompkins <= makespan_heft
     assert 2*makespan_tompkins >= makespan_heft
-
-def write_kalman_data(n, k, directory='.'):
-    ninputs = make_inputs(n, k)
-    filenames = ['%s/%s.dat' % (directory, name) for name in map(str, inputs)]
-    for ninput, filename in zip(ninputs, filenames):
-        np.savetxt(filename, ninput, newline=' ')
