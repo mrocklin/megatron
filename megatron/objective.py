@@ -3,7 +3,7 @@ from computations.matrices.blas import GEMM, SYMM, AXPY, SYRK
 from computations.matrices.lapack import GESV, POSV, IPIV, LASWP
 from computations.matrices.fftw import FFTW
 from sympy.matrices.expressions.fourier import DFT
-from sympy.matrices.expressions import Transpose, Inverse, MatMul
+from sympy.matrices.expressions import Transpose, Inverse, MatMul, MatAdd
 
 order = [FFTW, POSV, GESV, LASWP, SYRK, SYMM, GEMM, AXPY]
 
@@ -24,11 +24,15 @@ def objective(C):
     else:
         return objective_one(C)
 
+def invalid_input(i):
+    return (isinstance(i, DFT) or
+            isinstance(i, Transpose) and isinvalid_input(i.arg) or
+            isinstance(i, Inverse) or
+            # isinstance(i, MatMul) and isinstance(i.args[-1], Inverse) or
+            isinstance(i, MatMul) and invalid_input(i.args[-1]) or
+            isinstance(i, MatAdd) and any(invalid_input(arg) for arg in i.args)
+            )
+
+
 def valid(C):
-    if (any(isinstance(i, DFT) for i in C.inputs)
-     or any(isinstance(i, Transpose) and isinstance(i.arg, DFT) for i in C.inputs)
-     or any(isinstance(i, Inverse) for i in C.inputs)
-     or any(isinstance(i, MatMul) and isinstance(i.args[-1], Inverse) for i in C.inputs)
-     ):
-        return False
-    return True
+    return not any(invalid_input(i) for i in C.inputs)
