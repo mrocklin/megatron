@@ -28,7 +28,7 @@ def make_heft(c, agents, assumptions, commcost, inputs, ninputs, filenames):
         compcost = make_compcost(ic, inputs, ninputs)
 
         orders, jobson = schedule_heft(ic.dict_io(), agents, compcost, commcost)
-        neworders, jobson = insert_sendrecvs(orders, jobson, c.dict_io(),
+        neworders, jobson = insert_sendrecvs(orders, jobson, ic.dict_io(),
                                              send=send, recv=recv)
 
         args = []
@@ -63,7 +63,8 @@ def make_heft(c, agents, assumptions, commcost, inputs, ninputs, filenames):
 
 from tompkins import schedule as schedule_tompkins
 from tompkins import orderings
-def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames):
+def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames,
+        **kwargs):
     tokenizer = make_getname()
     ic = inplace_compile(c, tokenizer=tokenizer, Copy=COPY)
 
@@ -73,8 +74,9 @@ def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames):
     with assuming(*assumptions):
         compcost = make_compcost(ic, inputs, ninputs)
 
+        M = kwargs.pop('M', 20.0)
         dags, sched, m = schedule_tompkins(ic.dict_io(), agents, compcost,
-                commcost, send=send, recv=recv, M=20.0)
+                commcost, send=send, recv=recv, M=M)
         torders = orderings(sched)
 
         args = []
