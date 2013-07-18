@@ -17,16 +17,16 @@ def computations_for(expr):
     c = var('comp')
     e = var('expr')
     pred = var('predicate')
-    result = run(0, c, (computes, e, c, pred),
-                       (eqac, e, expr),
-                       (asko, pred, True))
+    result = run(None, c, (computes, e, c, pred),
+                          (eqac, e, expr),
+                          (asko, pred, True))
     return result
 
 def children(comp):
     """ Compute next options in tree of possible algorithms """
-    atomics = it.chain.from_iterable(it.imap(computations_for, comp.inputs))
-    atomics = (a for a in atomics if a.typecheck() and valid(a))
-    return it.imap(comp.__add__, atomics)
+    return (comp + a for i in comp.inputs
+                     for a in computations_for(i)
+                      if a.typecheck() and valid(a))
 
 from megatron.objective import objective, valid
 from computations.core import Identity
@@ -48,14 +48,13 @@ def blind(children, objective, isleaf, node):
     objective   :: a -> score   --  Quality of node (not used)
     isleaf      :: a -> T/F     --  Successful leaf of tree
     """
-    if debug:
-        print "Node:   ", node, '\n\n'
-        print "Inputs: ", '\n'.join(map(str,node.inputs)), '\n\n'
-    if isleaf(node):
+    while not isleaf(node):
+        old, node = node, next(children(node))
+        assert old != node
+        assert old.inputs != node.inputs
         if debug:
-            print "Is Leaf"
-        return iter([node])
-    return blind(children, objective, isleaf, next(children(node)))
+            print len(node.inputs)
+    return iter([node])
 
 def greedy(children, objective, isleaf, node):
     """ Greedy guided search in tree
@@ -84,7 +83,7 @@ def greedy(children, objective, isleaf, node):
 def compile(inputs, outputs, *assumptions, **kwargs):
     """ A very simple greedy scheme."""
 
-    strat = kwargs.get('strat', greedy)
+    strategy = kwargs.get('strategy', greedy)
     c = Identity(*outputs)
 
     # Is this computation a leaf in our tree?  Do its inputs match ours?
@@ -92,7 +91,7 @@ def compile(inputs, outputs, *assumptions, **kwargs):
 
     with assuming(*assumptions):
         with variables(*vars):
-            stream = strat(children, objective, isleaf, c) # all valid computations
+            stream = strategy(children, objective, isleaf, c) # all valid computations
             result = next(stream)                           # first valid computtion
 
     return result
