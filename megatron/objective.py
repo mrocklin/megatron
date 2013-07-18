@@ -26,7 +26,7 @@ def objective(C):
 
 def invalid_input(i):
     return (isinstance(i, DFT) or
-            isinstance(i, Transpose) and isinvalid_input(i.arg) or
+            isinstance(i, Transpose) and invalid_input(i.arg) or
             isinstance(i, Inverse) or
             # isinstance(i, MatMul) and isinstance(i.args[-1], Inverse) or
             isinstance(i, MatMul) and invalid_input(i.args[-1]) or
