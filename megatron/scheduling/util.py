@@ -1,3 +1,4 @@
+from computations.inplace import TokenComputation
 
 def make_order_cmp(order):
     """
@@ -18,3 +19,9 @@ def make_order_cmp(order):
         else:
             return 0
     return order_cmp
+
+def wrap_tokenize(icomp, newcomp, tokenizer):
+    known = {et.expr: et.token for et in icomp.inputs + icomp.outputs}
+    input_tokens = [known[i] if i in known else tokenizer(i) for i in newcomp.inputs]
+    output_tokens = [known[o] if o in known else tokenizer(o) for o in newcomp.outputs]
+    return TokenComputation(newcomp, input_tokens, output_tokens)
