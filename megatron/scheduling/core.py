@@ -12,7 +12,7 @@ from megatron.scheduling.times import (make_compcost, make_commcost,
         make_commcost_tompkins)
 
 from sympy import Q, assuming
-
+import numpy as np
 
 from heft import schedule as schedule_heft
 from heft import insert_sendrecvs, makespan
@@ -108,3 +108,8 @@ def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames,
         f.write('\n'.join(map(str, sched)))
 
     return tompcode, m
+
+def write_inputs(inputs, ninputs, directory='.'):
+    filenames = ['%s/%s.dat' % (directory, name) for name in map(str, inputs)]
+    for ninput, filename in zip(ninputs, filenames):
+        np.savetxt(filename, ninput, newline=' ')
