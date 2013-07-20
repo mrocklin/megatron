@@ -40,8 +40,10 @@ computations = lambda comp: comp.toposort()
 def profile_build(pcomp, inputs, **kwargs):
     durations = [c.duration for c in computations(pcomp)]
     key = str(abs(hash(pcomp)))
-    f = build(pcomp, inputs, durations, modname='profile_'+key,
-                                        filename='profile_%s.f90'%key,
+    filename = kwargs.pop('filename', 'profile_%s.f90'%key)
+    modname  = kwargs.pop('modname', 'profile_%s'%key)
+    f = build(pcomp, inputs, durations, modname=modname,
+                                        filename=filename,
                                         **kwargs)
     return f
 
