@@ -73,7 +73,7 @@ def greedy(children, objective, isleaf, node):
         return iter([node])
     f = partial(greedy, children, objective, isleaf)
     options = sorted(children(node), key=objective)
-    if debug:
+    if False:
         from computations.dot import show
         map(show, options)
     streams = it.imap(f, options)
