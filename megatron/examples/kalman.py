@@ -29,8 +29,10 @@ a, b = agents = (0, 1)
 
 c = make_kalman_comp(*inputs)
 
-commcost = make_commcost(7.058e-5, 6.87e-7)
-commcost_tomp = make_commcost_tompkins(7.058e-5, 6.87e-7)
+latency, bandwidth = 2.7e-4, 1.1e8
+invbandwidth = 1./bandwidth
+commcost = make_commcost(latency, invbandwidth)
+commcost_tomp = make_commcost_tompkins(latency, invbandwidth)
 
 def make_inputs(n, k):
     ninputs = [
