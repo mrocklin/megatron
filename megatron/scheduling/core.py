@@ -32,7 +32,7 @@ def make_heft(c, agents, assumptions, commcost, inputs, ninputs, filenames):
                                              send=send, recv=recv)
 
         args = []
-        for ii, a in enumerate(dags):
+        for ii, a in enumerate(agents):
             h = CompositeComputation(*[e.job for e in neworders[a]])
 
             reads = [wrap_tokenize(h, ReadFromFile(filenames[i], i), tokenizer)
@@ -110,8 +110,3 @@ def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames,
         f.write('\n'.join(map(str, sched)))
 
     return tompcode, m
-
-def write_inputs(inputs, ninputs, directory='.'):
-    filenames = ['%s/%s.dat' % (directory, name) for name in map(str, inputs)]
-    for ninput, filename in zip(ninputs, filenames):
-        np.savetxt(filename, ninput, newline=' ')
