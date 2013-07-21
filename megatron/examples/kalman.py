@@ -1,5 +1,5 @@
 from megatron.scheduling.times import make_commcost, make_commcost_tompkins
-from megatron.scheduling.core import make_heft, make_tompkins, write_inputs
+from megatron.scheduling.core import make_heft, make_tompkins
 
 from computations.profile import profile
 from computations.matrices.examples.kalman import (inputs, outputs, n, k,
@@ -59,4 +59,6 @@ def make_tompkins_kalman():
 
 def write_kalman_data(n, k, directory='.'):
     ninputs = make_inputs(n, k)
-    write_inputs(inputs, ninputs, directory)
+    filenames_ = {k: "%s/%s"%(directory, v) for k, v in filenames.items()}
+    for input, ninput in zip(inputs, ninputs):
+        np.savetxt(filenames_[input], ninput, newline=' ')
