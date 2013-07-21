@@ -5,7 +5,7 @@ from computations.matrices.fortran.mpi import generate_mpi
 from computations.matrices.blas import COPY
 from computations.core import CompositeComputation
 from computations.inplace import (inplace_compile, make_getname, tokenize,
-        TokenComputation)
+        TokenComputation, inplace_tokenize)
 from megatron.scheduling.util import make_order_cmp, wrap_tokenize
 from megatron.scheduling.tompkinslink import computation_from_dict
 from megatron.scheduling.times import (make_compcost, make_commcost,
@@ -32,7 +32,7 @@ def make_heft(c, agents, assumptions, commcost, inputs, ninputs, filenames):
                                              send=send, recv=recv)
 
         args = []
-        for ii, a in enumerate(agents):
+        for ii, a in enumerate(dags):
             h = CompositeComputation(*[e.job for e in neworders[a]])
 
             reads = [wrap_tokenize(h, ReadFromFile(filenames[i], i), tokenizer)
@@ -42,6 +42,7 @@ def make_heft(c, agents, assumptions, commcost, inputs, ninputs, filenames):
             disk = CompositeComputation(*(reads + writes))
 
             h2 = h + disk
+            h2 = inplace_tokenize(h2)
 
             cmp = make_order_cmp([e.job for e in orders[a]])
 
@@ -81,7 +82,7 @@ def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames,
 
         args = []
 
-        for ii, a in enumerate(agents):
+        for ii, a in enumerate(dags):
             comps = set(dags[a].keys()) | set(sum(dags[a].values(), ()))
             t = computation_from_dict(dags[a])
 
@@ -92,6 +93,7 @@ def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames,
             disk = CompositeComputation(*(reads + writes))
 
             t2 = t + disk
+            t2 = inplace_tokenize(t2)
 
             cmp = make_order_cmp(torders[a])
 
