@@ -81,7 +81,7 @@ def make_tompkins(c, agents, assumptions, commcost, inputs, ninputs, filenames,
 
         args = []
 
-        for ii, a in enumerate(agents):
+        for ii, a in enumerate(dags):
             comps = set(dags[a].keys()) | set(sum(dags[a].values(), ()))
             t = computation_from_dict(dags[a])
 
