@@ -22,12 +22,9 @@ newmu, newSigma = outputs
 assumptions = tuple(map(dimsubs, assumptions))
 types = tuple(map(Q.real_elements, inputs))
 
-filenames = {mu: 'mu.dat', Sigma: 'Sigma.dat', H: 'H.dat', R: 'R.dat',
-             data: 'data.dat', newmu: 'mu2.dat', newSigma: 'Sigma2.dat'}
-
 a, b = agents = (0, 1)
 
-c = make_kalman_comp(*inputs)
+comp = make_kalman_comp(*inputs)
 
 latency, bandwidth = 2.7e-4, 1.1e8
 invbandwidth = 1./bandwidth
@@ -35,30 +32,31 @@ commcost = make_commcost(latency, invbandwidth)
 commcost_tomp = make_commcost_tompkins(latency, invbandwidth)
 
 def make_inputs(n, k):
-    ninputs = [
-        np.ones(n, dtype=np.float64),
-        np.eye(n, dtype=np.float64),
-        np.hstack([np.eye(k, dtype=np.float64),
-                              np.zeros((k, n-k), dtype=np.float64)]),
-        np.eye(k, dtype=np.float64),
-        np.ones(k, dtype=np.float64)
-    ]
+    nmu = np.random.rand(n)
+    nsigma = np.random.rand(n, n); nsigma = np.dot(nsigma, nsigma.T)
+    nh = np.random.rand(k, n)
+    nr = np.random.rand(k, k); nr = np.dot(nr, nr.T)
+    ndata = np.random.rand(k)
+
+    ninputs = nmu, nsigma, nh, nr, ndata
 
     ninputs = map(np.asfortranarray, ninputs)  # force fortran ordering
     return ninputs
 
 ninputs = make_inputs(nn, nk)
 
+filenames = {mu: 'mu.dat', Sigma: 'Sigma.dat', H: 'H.dat', R: 'R.dat',
+             data: 'data.dat', newmu: 'mu2.dat', newSigma: 'Sigma2.dat'}
+filenames = {k: 'tmp/'+v for k,v in filenames.items()}
+for input, ninput in zip(inputs, ninputs):
+    np.savetxt(filenames[input], ninput, newline=' ')
+
 def make_heft_kalman():
-    return make_heft(c, (a, b), types+assumptions, commcost, inputs, ninputs,
+    ninputs = make_inputs(nn, nk)
+    return make_heft(comp, (a, b), types+assumptions, commcost, inputs, ninputs,
             filenames)
 
 def make_tompkins_kalman():
-    return make_tompkins(c, (a, b), types+assumptions, commcost_tomp, inputs,
+    ninputs = make_inputs(nn, nk)
+    return make_tompkins(comp, (a, b), types+assumptions, commcost_tomp, inputs,
             ninputs, filenames)
-
-def write_kalman_data(n, k, directory='.'):
-    ninputs = make_inputs(n, k)
-    filenames_ = {k: "%s/%s"%(directory, v) for k, v in filenames.items()}
-    for input, ninput in zip(inputs, ninputs):
-        np.savetxt(filenames_[input], ninput, newline=' ')
